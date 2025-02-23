@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 Econ 5880w data rought cleaning/canadian_election.csv
+Econ 5880w data rought cleaning/NHS_na_remover.csv
+Econ 5880w data rought cleaning/HPI_vs_Supply_Change.gif
+Econ 5880w data rought cleaning/best_lags_results.csv
