@@ -29,7 +29,7 @@ dictnoary <- read_dta ("H:/我的云端硬盘/Mac things/2025 winter/Econ 5880W/
 
 
 
-
+#vuyrcuyfcurt
 # Define a vector containing all the variables
 variables <- c(
   # Survey Weights & Data Quality Variables
