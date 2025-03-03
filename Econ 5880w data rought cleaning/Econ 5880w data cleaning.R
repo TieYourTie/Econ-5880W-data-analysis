@@ -21,9 +21,11 @@ library(haven)
 
 ################################################################################################
 
-#lode the data
+#lode the data if youa run this code in the 
 canadian_election <- read_dta("H:/我的云端硬盘/Mac things/2025 winter/Econ 5880W/5880 project/Canadian election/2021 Canadian Election Study v2.0.dta")
 dictnoary <- read_dta ("H:/我的云端硬盘/Mac things/2025 winter/Econ 5880W/5880 project/Canadian election/CES21_dictionarycoding_public_release_final.dta")
+
+
 ################################################################################################
 
 
