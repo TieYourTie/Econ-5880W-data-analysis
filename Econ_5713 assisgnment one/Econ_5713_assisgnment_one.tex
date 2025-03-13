@@ -1,0 +1,520 @@
+\documentclass{article} % Only one \documentclass declaration
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{listings} 
+\usepackage[margin=1in]{geometry} % Sets all margins to one inch
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+
+
+\begin{document}
+
+\title{Econ 5713 Assignment One}
+\author{Tie Ma}
+\date{2025/03/02}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Question one}
+\subsection{Q1-a}
+
+
+
+
+We have a simple CAPM regression model as following
+\begin{equation}
+Y_t = \alpha_0 + \beta_0 X_t + \epsilon_t,
+\end{equation}
+
+base on the figure one:
+\[
+Y_t = \text{IBM Risk-Adjusted Return}, 
+\quad 
+X_t = \text{Market Risk-Adjusted Return}.
+\]
+
+
+
+\begin{itemize}
+    \item \textbf{Dependent Variable:} The variable we are trying to explain, it is \(\text{IBM\_RISK\_ADJ\_RETURN}\)
+    \item \textbf{Method (Least Squares):} the method we using which is ordernery least squared 
+    \item \textbf{Sample / Included Observations:} The sample size which is 132 month here. 
+    \item \textbf{HAC Standard Errors \& Covariance:} The method that use to adjust for possible autocorrelation and heteroskedasticity in the residuals. Due the poossible OLS cannot processing time series data proporly.
+    \item \textbf{Coefficients (C(1) and C(2)):}
+    \begin{itemize}
+        \item \(\hat{\alpha}_0\) (labeled as \(\text{C(1)}\)) intercept.
+        \item \(\hat{\beta}_0\) (labeled as \(\text{C(2)}\)) is the estimated slope of market risk-adjusted return.
+    \end{itemize}
+    \item \textbf{Standard Error:} The standard error which measure the statistical uncertainty.
+    \item \textbf{t-statistic:} The ratio of each coefficient to its standard error,
+    where \(\hat{\theta}\) is the estimated parameter (either \(\hat{\alpha}_0\) or \(\hat{\beta}_0\)).
+    \item \textbf{p-value:}  describing the likelihood of obtaining the observed data under the null hypothesis of a statistical test.
+    \item \textbf{R-squared:} How good the data fit the model
+    \item \textbf{Adjusted R-squared:} improved version of \(R^2\) adjusted for the number of regressors relative to the sample size.
+    \item \textbf{Standard Error of Regression (SER):} The  standard deviation of residuals.
+    \item \textbf{Sum of Squared Residuals (SSR):} The sum of squared residuals.
+    \item \textbf{Log Likelihood:} The value of the log-likelihood function for the fitted model.
+    \item \textbf{Akaike Information Criterion (AIC) and Schwarz Criterion (BIC):} how good the variable is in the model, it will punish the variable that is not important.
+    \item \textbf{F-statistic:} Tests of  significance of the regression.
+    \item \textbf{Prob(F-statistic):} The p-value of  F-test.
+    \item \textbf{Durbin-Watson Stat:} A test for autocorrelation in the residuals.
+\end{itemize}
+
+\subsection*{Q1-b}
+
+
+Recall the ols model:
+\begin{equation}
+ y_t = \alpha_0 + \beta_0 x_t + \epsilon_t, \quad t = 1,2,\dots,n,
+\end{equation}
+
+With the assumption 
+
+\begin{equation}
+ \epsilon_t \overset{i.i.d.}{\sim} N(0,\sigma^2).
+\end{equation}
+
+Otherwise you cannot do confdience interval
+
+Step one: Drive the expression for the $\alpha_0$ and $\beta_0$
+
+\begin{equation}
+ \text{RSS} = \sum_{t=1}^n \left(y_t - \alpha_0 - \beta_0 x_t\right)^2.
+\end{equation}
+
+\begin{equation}
+ \hat{\beta}_0 = \frac{\sum_{t=1}^n (x_t - \bar{x})(y_t - \bar{y})}{\sum_{t=1}^n (x_t - \bar{x})^2} 
+\end{equation}
+
+We can rewrite it as following: 
+\begin{equation}
+\frac{S_{xy}}{S_{xx}}
+\end{equation}
+
+\begin{equation}
+ S_{xy} = \sum_{t=1}^n (x_t - \bar{x})(y_t - \bar{y})
+\end{equation}
+
+\begin{equation}
+ S_{xx} = \sum_{t=1}^n (x_t - \bar{x})^2.
+\end{equation}
+
+For the intercept
+\begin{equation}
+ \hat{\alpha}_0 = \bar{y} - \hat{\beta}_0 \bar{x}.
+\end{equation}
+
+
+step two: apply the law or the large number (LLN) and Central Limit Theorem (CLT)
+
+because we assume the model is stationary and $ \epsilon_t \overset{i.i.d.}{\sim} N(0,\sigma^2) $, we will get the finite variance.
+
+by law the large number (LLN)
+
+The sample mean $\bar{x}$ converges to $E(x_t)$. 
+scaled sum of squares converges to the variance of the $x_t$
+
+\begin{equation}
+ \frac{S_{xx}}{n} = \frac{1}{n}\sum_{t=1}^n (x_t - \bar{x})^2 \overset{p}{\longrightarrow} \operatorname{Var}(x_t).
+\end{equation}
+
+Therefore we can say we have a consistency of the estimatiors. 
+
+simplifiy:
+\begin{equation}
+    S_{xy} = \sum_{t=1}^n (x_t - \bar{x})(y_t - \bar{y})
+\end{equation}
+
+
+\begin{equation}
+ y_t = \alpha_0 + \beta_0 x_t + \epsilon_t
+\end{equation}
+
+
+\begin{equation}
+ \bar{y} = \alpha_0 + \beta_0 \bar{x}.
+\end{equation}
+
+\begin{equation}
+ y_t - \bar{y} = (\alpha_0 + \beta_0 x_t + \epsilon_t) - (\alpha_0 + \beta_0 \bar{x}).
+\end{equation}
+
+\begin{equation}
+y_t - \bar{y} = \beta_0 (x_t - \bar{x}) + \epsilon_t.
+\end{equation}
+
+\begin{equation}
+ S_{xy} = \sum_{t=1}^n (x_t - \bar{x})\epsilon_t.
+\end{equation}
+
+
+Recall the CLT
+
+\begin{equation}
+ \sqrt{T}(\hat{\beta}_0 - \beta_0) \approx  \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{S_{xx}/n} \xrightarrow{d} N\!\left(0, \frac{\sigma^2}{\operatorname{Var}(x_t)}\right).
+\end{equation}
+
+
+\begin{equation}
+    \frac{S_{xx}}{n} = \frac{\sum_{t=1}^n (x_t - \bar{x})^2}{n}
+\end{equation}
+   
+
+\begin{equation}
+  \mathbb{E}[X^2]  = \frac{\sum_{t=1}^n (x_t - \bar{x})^2}{n}
+\end{equation}
+   
+\begin{equation}
+    \sqrt{T}(\hat{\beta}_0 - \beta_0) \approx \frac{1}{\sqrt{T}} \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] } \xrightarrow{d} N\!\left(0, \frac{\sigma^2}{\operatorname{Var}(x_t)}\right).
+\end{equation}
+
+Then the distribution for the $\beta_0$ is
+
+
+\begin{equation}
+ \frac{\sqrt{T}(\hat{\beta}_0 - \beta_0)}{ \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] }}
+\end{equation}
+
+
+The 95 confidence interval is:
+\begin{equation}
+ -1.96  \leqslant \frac{\sqrt{T}(\hat{\beta}_0 - \beta_0)}{ \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] }} \leqslant 1.96
+\end{equation}
+
+
+\begin{equation}
+    \frac{-1.96}{\sqrt{T}} \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] }  \leqslant (\hat{\beta}_0 - \beta_0)  \leqslant  \frac{1.96}{\sqrt{T}} \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] } 
+\end{equation}
+   
+   
+\begin{equation}
+    \hat{\beta}_0 -\frac{1.96}{\sqrt{T}} \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] }  \leqslant  \beta_0 \leqslant  \hat{\beta}_0 + \frac{1.96}{\sqrt{T}} \frac{\sum_{t=1}^n (x_t - \bar{x})\epsilon_t}{\mathbb{E}[X^2] } 
+\end{equation}
+   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+\subsection{Q1-c}
+
+\[
+\hat{\alpha}_0 = 0.005851, \quad \text{Std. Error}(\hat{\alpha}_0) = 0.006054,
+\]
+\[
+\hat{\beta}_0 = 1.188280, \quad \text{Std. Error}(\hat{\beta}_0) = 0.146546.
+\]
+The sample size is \(n=132\). For a 95\% confidence interval, we use:
+\[
+t_{0.025,\,130} \approx 1.978 
+\]
+
+Confidence Interval for \(\alpha_0\)
+\begin{align*}
+\hat{\alpha}_0 \pm t_{0.025,130} \times \text{Std. Error}(\hat{\alpha}_0) &= 0.005851 \pm 1.978 \times 0.006054 \\
+&= (0.005851 - 0.01197, \; 0.005851 + 0.01197) \\
+&= (-0.0061, \; 0.0178).
+\end{align*}
+
+Confidence Interval for \(\beta_0\)
+\begin{align*}
+\hat{\beta}_0 \pm t_{0.025,130} \times \text{Std. Error}(\hat{\beta}_0) &= 1.188280 \pm 1.978 \times 0.146546 \\
+&= (1.188280 - 0.2899, \; 1.188280 + 0.2899) \\
+&= (0.8984, \; 1.4782).
+\end{align*}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Question Two}
+\subsection{Q2-a}
+
+Recall the CLT Condition: 
+
+\begin{equation}
+    \bar{Z} = \frac{1}{T} \sum_{t=1}^{T} Z_t.
+\end{equation}
+
+\begin{equation}
+    \sqrt{T} \bar{Z} \overset{d}{\to} \mathcal{N} \left( 0, \text{Var}(\sqrt{T} \bar{Z}) \right), \quad \text{as } T \to \infty.
+\end{equation}
+
+Therefore, for CLT to hold, the long-run variance:
+
+\begin{equation}
+    \text{Var} \left( \sqrt{T} \bar{Z} \right) = \mathbb{E} \left[ \left( \sqrt{T} \bar{Z} \right)^2 \right]
+\end{equation}
+
+must be finite.
+
+Then,  we expanding the variance
+
+\begin{align}
+    \text{Var} \left( \sqrt{T} \bar{Z} \right) &= \mathbb{E} \left[ \left( \frac{1}{\sqrt{T}} \sum_{t=1}^{T} Z_t \right)^2 \right] \\
+    &= \frac{1}{T} \mathbb{E} \left[ \left( \sum_{t=1}^{T} Z_t \right)^2 \right] \\
+    &= \frac{1}{T} \left[ T \mathbb{E}[Z_0^2] + 2 \sum_{m=1}^{T-1} (T-m) \mathbb{E}[Z_0 Z_m] \right] \\
+    &= \mathbb{E}[Z_0^2] + 2 \sum_{m=1}^{T-1} \left( 1 - \frac{m}{T} \right) \mathbb{E}[Z_0 Z_m].
+\end{align}
+
+The second summation term,
+
+\begin{equation}
+    \sum_{m=1}^{T-1} \left( 1 - \frac{m}{T} \right) \mathbb{E}[Z_0 Z_m],
+\end{equation}
+
+is Bartlett's kernel. 
+
+Recall, the AR(1) equation in the quesiton 
+
+\begin{equation}
+    Y_t = \alpha_0 +  \beta Z_{t-1} + \epsilon_t, \quad \epsilon_t \sim \text{i.i.d.} (0, \sigma^2).
+\end{equation}
+
+assume $\beta $ is a stationary and ergioic process 
+
+
+For this process, the autocovariance function is:
+
+\begin{equation}
+    \mathbb{E}[Z_0 Z_m] = \gamma_m = \frac{\sigma^2}{1 - \beta^2} \beta^m.
+\end{equation}
+
+Substituting this into Bartlett’s kernel:
+
+\begin{equation}
+    \sum_{m=1}^{T-1} \left( 1 - \frac{m}{T} \right) \frac{\sigma^2}{1 - \beta^2} \beta^m.
+\end{equation}
+
+
+Therefore  $\beta$ need to  $|\beta| < 1$ to be stationary that the variance will not explore.
+
+\text{ $|\beta| < 1$ (Stationary)}
+\begin{itemize}
+    \item The term $\beta^m$ decays exponentially.
+    \item The infinite sum $\sum_{m=1}^{\infty} \beta^m$ converges to $\frac{\beta}{1 - \beta}$.
+    \item Therefore, Bartlett’s kernel sum remains finite, meaning $\text{Var}(\sqrt{T} \bar{Z})$ is well-defined.
+    \item Futhermore,  CLT holds.
+\end{itemize}
+
+
+\subsection{Q2-b}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Question Three}
+\subsection{Q3-a}
+
+Recall the equation for the AR(2) are: 
+
+\begin{equation}
+ X_t = a_1 X_{t-1} + a_2 X_{t-2} + \epsilon_t
+\end{equation}
+
+The first Yule-walker equation
+
+\begin{equation}
+    E[X_t X_{t-1}] = a_1 E[X_{t-1}^2] + a_2 E[X_{t-1}X_{t-2}] + E[X_{t-1} \epsilon_t]
+\end{equation}
+
+
+Since \( E[X_{t-1} \epsilon_t] = 0 \), we get:
+
+\begin{equation}
+    \gamma(1) = a_1 \text{Var}(X) + a_2 \gamma(1)
+\end{equation}
+
+\begin{equation}
+    \gamma(1) = \frac{a_1}{1 - a_2} \text{Var}(X)
+\end{equation}
+
+
+The second Yule-walker equation
+
+\begin{equation}
+    E[X_t X_{t-2}] = a_1 E[X_{t-1}X_{t-2}] + a_2 E[X_{t-2}^2] + E[X_{t-2} \epsilon_t]
+\end{equation}
+
+Since \( E[X_{t-2} \epsilon_t] = 0 \), we get:
+
+\begin{equation}
+    \gamma(2) = a_1 \gamma(1) + a_2 \text{Var}(X)
+\end{equation}
+
+The third Yule-walker equation
+
+\begin{equation}
+    E[X_t X_{t-3}] = a_1 E[X_{t-1}X_{t-3}] + a_2 E[X_{t-2}X_{t-3}] + E[X_{t-3} \epsilon_t]
+\end{equation}
+
+Since \( E[X_{t-3} \epsilon_t] = 0 \), we get:
+\begin{equation}
+    \gamma(3) = a_1 \gamma(2) + a_2 \gamma(1)
+\end{equation}
+
+
+\subsection{Q3-b}
+
+Recall the equation for the AR(5) are: 
+
+\begin{equation}
+    X_t = a_1 X_{t-1} + a_2 X_{t-2} + a_3 X_{t-3} + a_4 X_{t-4} + a_5 X_{t-5} + \epsilon_t
+\end{equation}
+
+The first Yule-Walker equation
+
+\begin{equation}
+    E[X_t X_{t-1}] = a_1 E[X_{t-1}^2] + a_2 E[X_{t-1}X_{t-2}] + a_3 E[X_{t-1}X_{t-3}] + a_4 E[X_{t-1}X_{t-4}] + a_5 E[X_{t-1}X_{t-5}] + E[X_{t-1} \epsilon_t]
+\end{equation}
+
+
+Since \( E[X_{t-1} \epsilon_t] = 0 \), we obtain:
+
+\begin{equation}
+    \gamma(1) = a_1 \text{Var}(X) + a_2 \gamma(1) + a_3 \gamma(2) + a_4 \gamma(3) + a_5 \gamma(4)
+\end{equation}
+
+The Second Yule-Walker equation
+
+\begin{equation}
+    E[X_t X_{t-2}] = a_1 E[X_{t-1}X_{t-2}] + a_2 E[X_{t-2}^2] + a_3 E[X_{t-2}X_{t-3}] + a_4 E[X_{t-2}X_{t-4}] + a_5 E[X_{t-2}X_{t-5}] + E[X_{t-2} \epsilon_t]
+\end{equation}
+
+Since \( E[X_{t-2} \epsilon_t] = 0 \), we obtain:
+
+\begin{equation}
+    \gamma(2) = a_1 \gamma(1) + a_2 \text{Var}(X) + a_3 \gamma(1) + a_4 \gamma(2) + a_5 \gamma(3)
+\end{equation}
+
+The Third Yule-Walker equation
+
+\begin{equation}
+    E[X_t X_{t-3}] = a_1 E[X_{t-1}X_{t-3}] + a_2 E[X_{t-2}X_{t-3}] + a_3 E[X_{t-3}^2] + a_4 E[X_{t-3}X_{t-4}] + a_5 E[X_{t-3}X_{t-5}] + E[X_{t-3} \epsilon_t]
+\end{equation}
+
+
+Since \( E[X_{t-3} \epsilon_t] = 0 \), we obtain:
+
+\begin{equation}
+ \gamma(3) = a_1 \gamma(2) + a_2 \gamma(1) + a_3 \text{Var}(X) + a_4 \gamma(1) + a_5 \gamma(2)
+\end{equation}
+
+
+The Fourth Yule-Walker equation
+
+\begin{equation}
+ E[X_t X_{t-4}] = a_1 E[X_{t-1}X_{t-4}] + a_2 E[X_{t-2}X_{t-4}] + a_3 E[X_{t-3}X_{t-4}] + a_4 E[X_{t-4}^2] + a_5 E[X_{t-4}X_{t-5}] + E[X_{t-4} \epsilon_t]
+\end{equation}
+
+
+Since \( E[X_{t-4} \epsilon_t] = 0 \), we obtain:
+
+\begin{equation}
+    \gamma(4) = a_1 \gamma(3) + a_2 \gamma(2) + a_3 \gamma(1) + a_4 \text{Var}(X) + a_5 \gamma(1)
+\end{equation}
+
+The Fifth Yule-Walker equation
+\begin{equation}
+ E[X_t X_{t-5}] = a_1 E[X_{t-1}X_{t-5}] + a_2 E[X_{t-2}X_{t-5}] + a_3 E[X_{t-3}X_{t-5}] + a_4 E[X_{t-4}X_{t-5}] + a_5 E[X_{t-5}^2] + E[X_{t-5} \epsilon_t]
+\end{equation}
+
+Since \( E[X_{t-5} \epsilon_t] = 0 \), we obtain:
+\begin{equation}
+ \gamma(5) = a_1 \gamma(4) + a_2 \gamma(3) + a_3 \gamma(2) + a_4 \gamma(1) + a_5 \text{Var}(X)
+\end{equation}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Question Four}
+\subsection{Q4-a}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Question Five}
+\subsection{Q5-a}
+recall the FCLT 
+
+\begin{equation}
+ \frac{S_{\lfloor T \tau \rfloor}}{\sqrt{T}} \overset{d}{\longrightarrow} \sigma_{\epsilon} B(\tau),
+\end{equation}
+
+
+For large \( T \), we approximate:
+
+\begin{equation}
+   S_{1,t} \approx \sigma_{\epsilon} \sqrt{T} B\left(\frac{t}{T}\right).
+\end{equation}
+
+Substituting the approximation into the sum
+
+\begin{equation}
+   \sum_{t=1}^{T} S_{1,t}^2 \approx \sigma_{\epsilon}^2 T \sum_{t=1}^{T} B^2\left(\frac{t}{T}\right).
+\end{equation}
+
+
+ As \( T \to \infty \), the Riemann sum \( \sum_{t=1}^{T} B^2\left(\frac{t}{T}\right) \) converges to the integral \( \int_{0}^{1} B^2(\tau) \, d\tau \).
+
+\begin{equation}
+   \int_{0}^{1} B^2(\tau) \, d\tau \sim \frac{1}{3} \chi^2(1),
+\end{equation}
+
+where \( \chi^2(1) \) denotes a chi-squared distribution with 1 degree of freedom.
+
+\begin{equation}
+   \sum_{t=1}^{T} S_{1,t}^2 \approx \sigma_{\epsilon}^2 T \cdot \frac{1}{3} \chi^2(1).
+\end{equation}
+
+The sampling distribution of \( \sum_{t=1}^{T} S_{1,t}^2 \) is:
+
+\begin{equation}
+\sum_{t=1}^{T} S_{1,t}^2 \sim \frac{\sigma_{\epsilon}^2 T}{3} \chi^2(1).
+\end{equation}
+
+
+\subsection{Q5-b}
+
+Recall the FCLT 
+\begin{equation}
+ \frac{S_{\lfloor T \tau \rfloor}}{\sqrt{T}} \overset{d}{\longrightarrow} \sigma_{\epsilon} B(\tau),
+\end{equation}
+
+For large \( T \), approximate:
+\begin{equation}
+   S_{1,t} \approx \sigma_{\epsilon} \sqrt{T}\, B\left(\frac{t}{T}\right).
+\end{equation}
+
+Substitute the approximation of \( S_{1,t} \):
+\begin{equation}
+ \sum_{t=1}^{T} S_{1,t} \eta_t \approx \sigma_{\epsilon} \sqrt{T} \sum_{t=1}^{T} B\left(\frac{t}{T}\right) \eta_t.
+\end{equation}
+
+Since \( B\left(\frac{t}{T}\right) \) varies slowly over \( t \), approximate it as constant over small intervals:
+\begin{equation}
+ \sum_{t=1}^{T} B\left(\frac{t}{T}\right) \eta_t \approx \sigma_{\eta} \int_{0}^{1} B(\tau) \, dW(\tau),
+\end{equation}
+where \( W(\tau) \) is another Brownian motion representing the cumulative effect of \( \eta_t \).
+
+It is known that
+\begin{equation}
+   \int_{0}^{1} B(\tau) \, dW(\tau) \sim \mathcal{N}\left( 0, \int_{0}^{1} \mathbb{E}[B(\tau)^2] \, d\tau \right).
+\end{equation}
+
+Since \( \mathbb{E}[B(\tau)^2] = \tau \):
+\begin{equation}
+ \int_{0}^{1} \tau \, d\tau = \frac{1}{2}.
+\end{equation}
+
+Thus,
+\begin{equation}
+ \int_{0}^{1} B(\tau) \, dW(\tau) \sim \mathcal{N}\left( 0, \frac{1}{2} \right).
+\end{equation}
+
+Combine the results:
+\begin{equation}
+ \sum_{t=1}^{T} S_{1,t} \eta_t \approx \sigma_{\epsilon} \sqrt{T} \cdot \sigma_{\eta}\, \mathcal{N}\left( 0, \frac{1}{2} \right).
+\end{equation}
+
+Therefore, we conclude:
+\begin{equation}
+ \sum_{t=1}^{T} S_{1,t} \eta_t \sim \mathcal{N}\left( 0, \frac{\sigma_{\epsilon}^2 \sigma_{\eta}^2 T}{2} \right).
+\end{equation}
+
+
+\end{document}

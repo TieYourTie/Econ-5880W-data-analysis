@@ -1,0 +1,53 @@
+---
+title: "Housing Supply and Elasticities"
+author: "Abigail Meloche & Tie Ma"
+date: "February 25, 2025"
+output: beamer_presentation
+header-includes:
+  - \usepackage{graphicx}
+  - \usetheme{Madrid}
+  - \usepackage{tikz}
+  - \tikzstyle{box} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!10]
+  - \tikzstyle{arrow} = [thick,->,>=stealth]
+---
+
+# Research Question & Motivation
+
+### Question
+Do higher housing supply elasticities cause housing supply and, consequently, housing prices to respond more strongly to monetary policy changes?
+
+### Motivation
+- Strong precedence for analyzing housing supply using elasticities in the literature
+- Lack of empirical work on monetary policy and housing supply
+
+---
+
+# Motivation in Theory
+
+\[
+\begin{tikzpicture}[node distance=1cm]
+\node (rate) [box] {Interest Rate $\downarrow$};
+\node (borrowing) [box, right of= rate, xshift = 3cm] {Cost of Borrowing $\downarrow$};
+\node (costs) [box, right of=borrowing, xshift=3cm] {Investment $\uparrow$};
+\node (demand) [box, below of=borrowing, yshift=-0.5cm] {Housing Demand $\uparrow$};
+\node (permits) [box, below of= costs, yshift = -0.5cm, draw = red] {Permits/Housing Starts $\uparrow$};
+\node (supply) [box, below of = permits, yshift = -0.5cm] {Housing Supply $\uparrow$};
+\node (price) [box, xshift = 5.5cm, yshift = -4.5cm] {Price?};
+
+% Arrows
+\draw [arrow] (rate) -- (borrowing);
+\draw [arrow] (borrowing) -- (costs);
+\draw [arrow] (borrowing) -- (demand);
+\draw [arrow] (costs) -- (permits);
+\draw [arrow] (permits) -- (supply);
+\draw [arrow] (supply) -- (price);
+\draw [arrow] (demand) -- (price);
+\end{tikzpicture}
+\]
+
+---
+
+# Motivation - Through The Data
+
+```{r, echo=FALSE, out.width='90%'}
+knitr::include_graphics("Latex_Supply_Lagged_V2.png")
