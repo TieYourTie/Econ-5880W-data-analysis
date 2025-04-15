@@ -9,3 +9,4 @@ Econ 5880w data rought cleaning/best_lags_results.csv
 *.dta
 *.pdf
 *.qsf
+.RDataTmp
