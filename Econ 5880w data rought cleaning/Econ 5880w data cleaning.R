@@ -1,6 +1,26 @@
 rm(list = ls())
 #make sure everthing will be fine.)
 
+# List of required packages
+required_packages <- c(
+  "lubridate", "cansim", "OECD", "WDI", "fredr", 
+  "mFilter", "neverhpfilter", "tsbox", "RColorBrewer", 
+  "plotly", "wesanderson", "writexl", "tidyverse", 
+  "readr", "haven"
+)
+
+# Install missing packages
+missing_packages <- required_packages[!(required_packages %in% installed.packages()[, "Package"])]
+if(length(missing_packages)) install.packages(missing_packages)
+
+# Load the packages
+lapply(required_packages, library, character.only = TRUE)
+
+fredr_set_key("YOUR_FRED_API_KEY")
+installed.packages()[, "Package"]
+install.packages("dplyr")
+
+
 #Step one Lode the all package that necessary. 
 library (lubridate)    
 library (cansim)       
@@ -17,21 +37,12 @@ library(writexl)
 library(tidyverse)
 library(readr)
 library(haven)
-
-
-################################################################################################
-
-#lode the data if youa run this code in the 
-canadian_election <- read_dta("Google Drive/我的云端硬盘/Mac things/2025 winter/Econ 5880W/5880 project/Canadian election/2021 Canadian Election Study v2.0.dta")
-dictnoary <- read_dta ("H:/我的云端硬盘/Mac things/2025 winter/Econ 5880W/5880 project/Canadian election/CES21_dictionarycoding_public_release_final.dta")
-
-
-################################################################################################
+library(dplyr)
 
 
 
 
-#vuyrcuyfcurt
+
 # Define a vector containing all the variables
 variables <- c(
   # Survey Weights & Data Quality Variables
@@ -111,7 +122,7 @@ variables <- c(
 
 # Print the list of selected variables
 print(variables)
-################################################################################################
+####################################################################################
 #important variable
 
 ce_p <- canadian_election %>%
@@ -183,9 +194,914 @@ ce_p <- ce_p %>%
 ce_p <- ce_p %>%
   select( -cps21_votechoice, -cps21_v_advance)
 
+############################ Pie Chart for Province ###################################################################
 
+install.packages("ggrepel")
+
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggrepel)  # For better text placement
+
+# Count the occurrences of each province
+province_counts <- data.frame(
+  Province = c("Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+               "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia", 
+               "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+               "Saskatchewan", "Yukon"),
+  Count = c(
+    sum(canadian_election$cps21_province == 1, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 2, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 3, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 4, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 5, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 6, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 7, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 8, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 9, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 10, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 11, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 12, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 13, na.rm = TRUE)
+  )
+)
+
+# Get total number of rows
+num_rows <- nrow(canadian_election)
+
+# Calculate percentage
+province_counts$Percentage <- (province_counts$Count / num_rows) * 100
+
+# Add percentage labels formatted to 1 decimal place
+province_counts$Label <- paste0(round(province_counts$Percentage, 1), "%")
+
+ggplot(province_counts, aes(x = "", y = Percentage, fill = Province)) +
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") +
+  geom_text(aes(label = Label), 
+            position = position_stack(vjust = 0.3), # Adjust label position
+            size = 4, 
+            color = "black") +  # Make text more readable
+  labs(title = "Province Distribution in Canadian Election Data", fill = "Province") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks = element_blank())
+
+############################ Pie Chart for Gender ######################################
+
+# Count the occurrences of each gender
+gender_counts <- data.frame(
+  Gender = c("Man", "Woman", "Non-binary", "Another gender"),
+  Count = c(
+    sum(canadian_election$cps21_genderid == 1, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 2, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 3, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 4, na.rm = TRUE)
+  )
+)
+
+# Calculate percentage
+gender_counts$Percentage <- (gender_counts$Count / num_rows) * 100
+
+# Add percentage labels formatted to 1 decimal place
+gender_counts$Label <- paste0(round(gender_counts$Percentage, 1), "%")
+
+ggplot(gender_counts, aes(x = "", y = Percentage, fill = Gender)) +
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") +
+  geom_text(aes(label = Label), 
+            position = position_stack(vjust = 0.3), # Adjust label position
+            size = 4, 
+            color = "black") +  # Make text more readable
+  labs(title = "Gender Distribution in Canadian Election Data", fill = "Gender") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks = element_blank())
+
+############################ Pie Chart for vote_Choice ###############################################
+
+# Count the occurrences of each party people voted for (excluding NA)
+party_counts <- data.frame(
+  Party = c("Liberal", "Conservative", "NDP", "Bloc Québécois", "Green", "Another party", "Prefer not to answer"),
+  Count = c(
+    sum(ce_p$voting_choise == 1, na.rm = TRUE),
+    sum(ce_p$voting_choise == 2, na.rm = TRUE),
+    sum(ce_p$voting_choise == 3, na.rm = TRUE),
+    sum(ce_p$voting_choise == 4, na.rm = TRUE),
+    sum(ce_p$voting_choise == 5, na.rm = TRUE),
+    sum(ce_p$voting_choise == 6, na.rm = TRUE),
+    sum(ce_p$voting_choise == 7, na.rm = TRUE)
+  )
+)
+
+# Remove parties with zero votes to avoid them appearing in the chart
+party_counts <- party_counts %>%
+  filter(Count > 0)
+
+# Get total valid votes (excluding NA)
+num_valid_votes <- sum(party_counts$Count)
+
+# Calculate percentage
+party_counts$Percentage <- (party_counts$Count / num_valid_votes) * 100
+
+# Add percentage labels formatted to 1 decimal place
+party_counts$Label <- paste0(round(party_counts$Percentage, 1), "%")
+
+# Create pie chart
+ggplot(party_counts, aes(x = "", y = Percentage, fill = Party)) +
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") +
+  geom_text(aes(label = Label), 
+            position = position_stack(vjust = 0.3), # Adjust label position
+            size = 4, 
+            color = "black") +  # Make text more readable
+  labs(title = "Party Distribution in Canadian Election Data", fill = "Party") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks = element_blank())  # Remove x-axis text
+
+############################ Bar Chart for Satisfaction (Libral)###########################################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Liberal"
+
+# Convert numerical satisfaction values into meaningful labels
 ce_p <- ce_p %>%
-  filter(!is.na(voting_choise))
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal()
+
+############################ Bar Chart for Satisfaction (Conservative)###########################################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Conservative"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal()
+
+############################ Bar Chart for Satisfaction (NDP)###########################################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "NDP"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal()
+
+############################ Bar Chart for Satisfaction (Bloc Québécois)###########################################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Bloc Québécois"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal()
+
+############################ Bar Chart for Satisfaction (Green)###########################################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Green"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal()
+
+
+############################ New Theme_Pie Chart for Gender #########################
+
+
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+library(haven)  # Required for haven-labelled data
+
+# Convert cps21_genderid to numeric (handling labelled data)
+canadian_election <- canadian_election %>%
+  mutate(cps21_genderid = as.numeric(as.character(cps21_genderid)))  # Ensure numeric format
+
+# Count the occurrences of each gender
+gender_counts <- data.frame(
+  Gender = c("Man", "Woman", "Non-binary", "Another gender"),
+  Count = c(
+    sum(canadian_election$cps21_genderid == 1, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 2, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 3, na.rm = TRUE),
+    sum(canadian_election$cps21_genderid == 4, na.rm = TRUE)
+  )
+)
+
+# Calculate percentage
+gender_counts$Percentage <- (gender_counts$Count / sum(gender_counts$Count)) * 100
+
+# Add percentage labels formatted to 1 decimal place
+gender_counts$Label <- paste0(round(gender_counts$Percentage, 1), "%")
+
+# Create pie chart with manually set Economist theme
+ggplot(gender_counts, aes(x = "", y = Percentage, fill = Gender)) +
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") +
+  geom_text(aes(label = Label), 
+            position = position_stack(vjust = 0.5), # Center labels
+            size = 5, 
+            fontface = "bold", 
+            color = "white") +  # Make text readable
+  labs(title = "Gender Distribution in Canadian Election Data", fill = "Gender") +
+  theme_minimal(base_size = 14) +  # Using minimal theme for clean look
+  theme(
+    panel.background = element_rect(fill = "white"),  # Ensure white background
+    plot.background = element_rect(fill = "white"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "right"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D", "#FDBF6F", "#33A02C"))  # Economist color scheme
+
+############################ New Theme_Pie Chart for vote_Choice ###############
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+library(haven)  # Required if voting_choise is haven-labelled
+
+# Convert voting_choise to numeric (if it's a labelled variable)
+ce_p <- ce_p %>%
+  mutate(voting_choise = as.numeric(as.character(voting_choise)))  # Ensure numeric format
+
+# Count occurrences of each party people voted for (excluding NA)
+party_counts <- data.frame(
+  Party = c("Liberal", "Conservative", "NDP", "Bloc Québécois", "Green", "Another party", "Prefer not to answer"),
+  Count = c(
+    sum(ce_p$voting_choise == 1, na.rm = TRUE),
+    sum(ce_p$voting_choise == 2, na.rm = TRUE),
+    sum(ce_p$voting_choise == 3, na.rm = TRUE),
+    sum(ce_p$voting_choise == 4, na.rm = TRUE),
+    sum(ce_p$voting_choise == 5, na.rm = TRUE),
+    sum(ce_p$voting_choise == 6, na.rm = TRUE),
+    sum(ce_p$voting_choise == 7, na.rm = TRUE)
+  )
+)
+
+# Remove parties with zero votes
+party_counts <- party_counts %>%
+  filter(Count > 0)
+
+# Get total valid votes
+num_valid_votes <- sum(party_counts$Count)
+
+# Calculate percentage
+party_counts$Percentage <- (party_counts$Count / num_valid_votes) * 100
+
+# Add percentage labels formatted to 1 decimal place
+party_counts$Label <- paste0(round(party_counts$Percentage, 1), "%")
+
+# Create pie chart with manually set Economist theme
+ggplot(party_counts, aes(x = "", y = Percentage, fill = Party)) +
+  geom_bar(stat = "identity", width = 1) + 
+  coord_polar(theta = "y") +
+  geom_text(aes(label = Label), 
+            position = position_stack(vjust = 0.5), # Center labels
+            size = 5, 
+            fontface = "bold", 
+            color = "white") +  # Improve readability
+  labs(title = "Party Distribution in Canadian Election Data", fill = "Party") +
+  theme_minimal(base_size = 14) +  # Clean layout
+  theme(
+    panel.background = element_rect(fill = "white"),  # Set white background
+    plot.background = element_rect(fill = "white"),
+    axis.text.x = element_blank(),  # Remove x-axis text
+    axis.ticks = element_blank(),
+    legend.position = "right"  # Place legend on the right
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D", "#FDBF6F", "#33A02C", "#A6CEE3", "#FB9A99", "#B15928"))  # Economist-style colors
+
+############################ New Theme_Pie Chart for Province ################
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+library(haven)
+library(ggrepel)  # Prevents label overlap and adds background color
+
+# Convert cps21_province to numeric (if it's a labelled variable)
+canadian_election <- canadian_election %>%
+  mutate(cps21_province = as.numeric(as.character(cps21_province)))
+
+# Count occurrences of each province
+province_counts <- data.frame(
+  Province = c("Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+               "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia", 
+               "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+               "Saskatchewan", "Yukon"),
+  Count = c(
+    sum(canadian_election$cps21_province == 1, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 2, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 3, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 4, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 5, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 6, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 7, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 8, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 9, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 10, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 11, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 12, na.rm = TRUE),
+    sum(canadian_election$cps21_province == 13, na.rm = TRUE)
+  )
+)
+
+# Remove provinces with zero votes
+province_counts <- province_counts %>%
+  filter(Count > 0)
+
+# Calculate percentages
+num_valid_responses <- sum(province_counts$Count)
+province_counts$Percentage <- (province_counts$Count / num_valid_responses) * 100
+province_counts$Label <- paste0(round(province_counts$Percentage, 1), "%")
+
+# Define colors for provinces (same for fill and label background)
+province_colors <- c("#e3120b", "#00688D", "#FDBF6F", "#33A02C", 
+                     "#A6CEE3", "#FB9A99", "#B15928", "#1F78B4", 
+                     "#B2DF8A", "#FF7F00", "#6A3D9A", "#CAB2D6", "#FF69B4")
+
+# Create pie chart with label background color matching the slice
+ggplot(province_counts, aes(x = "", y = Percentage, fill = Province)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  
+  # Use geom_label_repel for colored background labels
+  geom_label_repel(aes(label = Label, fill = Province),  # Fill matches slice color
+                   position = position_stack(vjust = 0.5),  # Correct label placement
+                   size = 5, fontface = "bold", color = "white",  # White text for readability
+                   force = 2, max.overlaps = Inf, segment.color = "grey50") +  
+  
+  labs(title = "Province Distribution in Canadian Election Data", fill = "Province") +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    axis.text.x = element_blank(),
+    axis.ticks = element_blank(),
+    legend.position = "right"
+  ) +
+  scale_fill_manual(values = province_colors)  # Ensures label background matches slices
+
+############################ New Theme_Bar Chart for Satisfaction (Green) ##############################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+library(ggthemes)
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Green"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal(base_size = 14) +  # 使用簡潔風格
+  theme(
+    panel.background = element_rect(fill = "white"),  # 背景設定為白色
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray80"),  # 模仿 Economist 的網格線
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D"))  # Economist 紅 & 藍
+
+############################ New Theme_Bar Chart for Satisfaction (Bloc Québécois) ##############################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+library(ggthemes)
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Bloc Québécois"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal(base_size = 14) +  # 使用簡潔風格
+  theme(
+    panel.background = element_rect(fill = "white"),  # 背景設定為白色
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray80"),  # 模仿 Economist 的網格線
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D"))  # Economist 紅 & 藍
+
+############################ New Theme_Bar Chart for Satisfaction (NDP) ##############################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+library(ggthemes)
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "NDP"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal(base_size = 14) +  # 使用簡潔風格
+  theme(
+    panel.background = element_rect(fill = "white"),  # 背景設定為白色
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray80"),  # 模仿 Economist 的網格線
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D"))  # Economist 紅 & 藍
+
+############################ New Theme_Bar Chart for Satisfaction (Conservative) ##############################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+library(ggthemes)
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Conservative"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal(base_size = 14) +  # 使用簡潔風格
+  theme(
+    panel.background = element_rect(fill = "white"),  # 背景設定為白色
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray80"),  # 模仿 Economist 的網格線
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D"))  # Economist 紅 & 藍
+
+############################ New Theme_Bar Chart for Satisfaction (Liberal) ##############################
+
+# Load required libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)  # For reshaping data
+library(ggthemes)
+
+# Select the political party to analyze (change this value as needed)
+selected_party <- "Liberal"
+
+# Convert numerical satisfaction values into meaningful labels
+ce_p <- ce_p %>%
+  mutate(
+    cps21_demsat_label = factor(cps21_demsat, 
+                                levels = c(1, 2, 3, 4, 5), 
+                                labels = c("Very satisfied", "Fairly satisfied", 
+                                           "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    pes21_dem_sat_label = factor(pes21_dem_sat, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Very satisfied", "Fairly satisfied", 
+                                            "Not very satisfied", "Not satisfied at all", "NA")),
+    
+    voting_choise_label = factor(voting_choise, 
+                                 levels = c(1, 2, 3, 4, 5), 
+                                 labels = c("Liberal", "Conservative", "NDP", 
+                                            "Bloc Québécois", "Green"))
+  )
+
+# Filter only respondents who voted for the selected party
+filtered_data <- ce_p %>%
+  filter(voting_choise_label == selected_party) %>%
+  select(cps21_demsat_label, pes21_dem_sat_label)  # Keep only relevant variables
+
+# Reshape data: Merge pre-election & post-election satisfaction into a single column
+long_data <- filtered_data %>%
+  pivot_longer(cols = c(cps21_demsat_label, pes21_dem_sat_label), 
+               names_to = "Satisfaction_Type", 
+               values_to = "Satisfaction_Level")
+
+# Rename "Satisfaction_Type" to indicate Pre-election and Post-election
+long_data <- long_data %>%
+  mutate(Satisfaction_Type = recode(Satisfaction_Type, 
+                                    cps21_demsat_label = "Pre-election",
+                                    pes21_dem_sat_label = "Post-election"))
+
+# Create a bar chart comparing pre-election vs. post-election satisfaction
+ggplot(long_data, aes(x = Satisfaction_Level, fill = Satisfaction_Type)) +
+  geom_bar(position = position_dodge2(reverse = TRUE)) +
+  labs(title = paste("Pre-election vs. Post-election Satisfaction for", selected_party),
+       x = "Satisfaction Level", 
+       y = "Count",
+       fill = "Election Phase") +
+  theme_minimal(base_size = 14) +  # 使用簡潔風格
+  theme(
+    panel.background = element_rect(fill = "white"),  # 背景設定為白色
+    plot.background = element_rect(fill = "white"),
+    panel.grid.major = element_line(color = "gray80"),  # 模仿 Economist 的網格線
+    panel.grid.minor = element_blank(),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  scale_fill_manual(values = c("#e3120b", "#00688D"))  # Economist 紅 & 藍
+
 
 
 ################################################################################################
